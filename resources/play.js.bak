@@ -1,0 +1,360 @@
+ var token = "0";
+ var user_id = "0";
+ var username = "0";
+ var i=0;
+ var id="0";
+ var detailid=0;
+ var card4=new Array();
+ var cardsweget=new Array();
+ var ids=new Array();
+ var scores=new Array();
+ var cards = "0";
+ var card2 = "0";
+ var card3=new Array();
+var cardstring;
+(function ($) {
+    $.fn.serializeJson = function () {
+        var serializeObj = {};
+        var array = this.serializeArray();
+        var str = this.serialize();
+        $(array).each(function () {
+            if (serializeObj[this.name]) {
+                if ($.isArray(serializeObj[this.name]) && this.value != "") {
+                    serializeObj[this.name].push(this.value);
+                } else {
+                    if (this.value != "") {
+                        serializeObj[this.name] = [serializeObj[this.name], this.value];
+                    }
+                }
+            } else {
+                if (this.value != "") {
+                    serializeObj[this.name] = this.value;
+                }
+            }
+        });
+        return serializeObj;
+    };
+})(jQuery);
+
+function register() 
+{
+	var infor1 = ($('#form1').serializeJson());
+    if ( infor1.username == null || infor1.password == null  ) 
+	{
+        alert("请填写注册信息!");
+        return;
+    }
+    $.ajax({
+		type: "POST",
+        dataType: "json",
+        url: ' http://api.revth.com/auth/register2 ',
+        data: JSON.stringify(infor1),
+        contentType: "application/json;charset-UTF-8",
+        success: function (data) {
+            console.log(data);
+            if (data.status == 0) 
+			{
+                alert("注册成功，请点击登录按钮登录您的账号");
+                window.open = '主页.html'
+            };
+        },
+        error: function (jqXHR, textStatus, errorThrownt) {
+			
+			var responseText = jQuery.parseJSON(jqXHR.responseText);
+			if (responseText.status == 1001) 
+			{
+                alert("用户名已被使用");
+            }
+			else if(responseText.status == 1002) 
+			{
+                alert("学号已被绑定");
+            }
+			else if(responseText.status == 1003) 
+			{
+                alert("教务处认证失败");
+            }
+        }
+    });
+}
+function login() 
+{
+    var infor2 = ($('#form2').serializeJson());
+    if (infor2.username == null  || infor2.password == null) 
+	{
+        alert("用户名或密码不能为空");
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        dataType: "json",
+        url: " http://api.revth.com/auth/login ",
+        data: JSON.stringify(infor2),
+        contentType: "application/json;charset-UTF-8",
+        success: function (result) 
+		{ 
+            console.log(result); 
+            if (result.status == 0) 
+			{
+                token=result.data.token;
+				user_id=result.data.user_id;
+				username=infor2.username
+                console.log(token);
+				localStorage.setItem("mytoken",token);
+				localStorage.setItem("myid",user_id);
+ 				localStorage.setItem("myname",username);
+                alert("登录成功!");
+                window.location.href = '登录后界面.html'
+            };
+        },
+        error: function (res) 
+		{
+            alert("用户名或密码错误，请确认后重新输入");
+        }
+    });
+}
+function logout(){
+	token=localStorage.getItem("mytoken");
+	$.ajax({
+        type: "POST",
+        url: " http://api.revth.com/auth/logout",
+		beforeSend: function(xhr) {
+                xhr.setRequestHeader("X-Auth-Token",token);
+            },
+        success: function (result) {
+            	console.log(result);
+				console.log(token);
+				alert("注销成功");
+                window.location.href = '主页.html'
+            },
+        error: function (res) {
+            alert("注销失败");
+        }
+    });
+}
+function start(){
+	token=localStorage.getItem("mytoken");
+	$.ajax({
+            url: "http://api.revth.com/game/open",
+            beforeSend: function(xhr) 
+			{
+                xhr.setRequestHeader("X-Auth-Token",token);
+            },
+            type: "post",
+            success: function (data) 
+			{
+				
+				console.log(data);
+				console.log(token);
+				cards=data.data.card;
+				id=data.data.id;
+			    localStorage.setItem("id1",id);
+				calculate();
+            },
+			error: function (res) {
+				alert("无法进入游戏");
+        	}
+        });
+}
+function calculate()
+{
+			alert("获得卡片："+cards);
+			console.log(cards);
+			console.log(JSON.stringify({
+				"card":cards
+			}));
+	$.ajax({
+            url: "http:// 47.106.161.166:7777/getcards", //算法
+			data:{"card":cards},
+			header:{
+             "Content-Type": "application/x-www-form-urlencoded",
+           			},
+            type: "post",
+            success: function (data) {
+				
+				
+				cardstring=data.card.toString();		
+				localStorage.setItem("card1",cardstring);
+				window.location.href  = '游戏界面_准备阶段_.html';
+            },
+			error: function (res) {
+				alert("无法进入游戏");
+        	}
+	
+        });
+}
+function postmycards(){
+	token=localStorage.getItem("mytoken");
+	id=localStorage.getItem("id1");
+	localStorage.setItem("detailid1",id);
+	card2=localStorage.getItem("card1");
+	card3=card2.split(/[ ,]+/);
+	card4[0]=card3[0]+' '+card3[1]+' '+card3[2];
+	card4[1]=card3[3]+' '+card3[4]+' '+card3[5]+' '+card3[6]+' '+card3[7];
+	card4[2]=card3[8]+' '+card3[9]+' '+card3[10]+' '+card3[11]+' '+card3[12];
+	console.log(card4);
+    id =Number(id);
+	$.ajax({
+            url: "http://api.revth.com/game/submit",
+			contentType:"application/json",
+		    data:JSON.stringify({
+				"id":id,
+				"card":card4
+			}),
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("X-Auth-Token",token);
+            },
+            type: "post",
+            success: function (data) {
+				console.log(token);
+				console.log(data);
+				console.log(data.data.msg);
+				alert("成功出牌");
+				window.location.href = '游戏界面__发牌_.html'
+            },
+			error: function (res) {
+				alert("数据传输失败");
+        	}
+        });
+	
+}
+function theidIget(){
+	user_id=localStorage.getItem("myid");
+	return user_id;
+}
+
+
+function add()
+{
+	document.getElementById("table1").innerHTML=null;
+	x++;
+	history(); 
+}
+function dec()
+		{
+			if(x>0)
+				{
+					document.getElementById("table1").innerHTML=null;
+					x--;
+					history();
+				} 
+			else 
+					return;
+		}
+function history() {
+        var json;
+        var token = localStorage.getItem('mytoken');
+        (function ($) {
+            $.fn.serializeJson = function () {
+                var serializeObj = {};
+                var array = this.serializeArray();
+                var str = this.serialize();
+                $(array).each(function () {
+                    if (serializeObj[this.name]) {
+                        if ($.isArray(serializeObj[this.name]) && this.value != "") {
+                            serializeObj[this.name].push(this.value);
+                        } else {
+                            if (this.value != "") {
+                                serializeObj[this.name] = [serializeObj[this.name], this.value];
+                            }
+                        }
+                    } else {
+                        if (this.value != "") {
+                            serializeObj[this.name] = this.value;
+                        }
+                    }
+                });
+                return serializeObj;
+            };
+        })(jQuery);
+        $.ajax({
+            type: "GET",
+            url: "http://api.revth.com/history?page="+i+"&limit=20&player_id="+theidIget(),
+            headers: 
+			{
+                'x-auth-token': token
+            } ,
+            success: function (result) {
+            console.log(result);
+            console.log(token);
+            json = result;
+            function getJsonLength(json) {
+                for (var i in json) {
+                    var l = 0;
+                    for (var j in json.data) {
+                        document.getElementById("table1").innerHTML += "<tr>"+"<td sstyle='text-align:center;border:solid 2px #000;'>" + json.data[l].id + "</td>"+"<td sstyle='text-align:center;border:solid 2px #000;'>" + json.data[l].card +"</td>"+"<td sstyle='text-align:center;border:solid 2px #000;'>" + json.data[l].score + "</td>"+"<td sstyle='text-align:center;border:solid 2px #000;'>" + json.data[l].timestamp + "</td>"+"</tr>";
+                        l++;
+                    };
+                };
+            }
+
+            getJsonLength(json);
+        }
+    });
+    }
+function search()
+{
+	var detail_data = ($('#detail').serializeJson());
+	localStorage.setItem("detailid1",detailid);
+    if (detail_data.idlalala == null ) {
+        alert("请输入您要查询的id！");
+        return;
+    }
+	detailid = detail_data.idlalala;
+	localStorage.setItem("detailid1",detailid);
+	 window.location.href = '游戏界面__发牌_.html'
+}
+function takealook()
+{
+	detailid=localStorage.getItem("detailid1");
+	console.log(detailid);
+	token=localStorage.getItem("mytoken");
+	$.ajax({
+            url: "http://api.revth.com/history/"+detailid,
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("X-Auth-Token",token);
+            },
+
+            type: "GET",
+            success: function (data) {				
+				console.log(data);
+				console.log(token);
+				cardsweget[0]=data.data.detail[0].card;
+				ids[0]=data.data.detail[0].player_id;
+				scores[0]=data.data.detail[0].score;
+				var cardstring=cardsweget[0].toString();
+				card3=cardstring.split(/[ ,]+/);
+		
+				document.getElementById('name2').innerHTML = ids[0];
+				document.getElementById('player2').innerHTML = "玩家2积分变化："+scores[0];				
+				cardsweget[1]=data.data.detail[1].card;
+				ids[1]=data.data.detail[1].player_id;
+				scores[1]=data.data.detail[1].score;
+				var cardstring=cardsweget[1].toString();
+				card3=cardstring.split(/[ ,]+/);
+				
+				document.getElementById('name1').innerHTML = ids[1];
+				document.getElementById('player1').innerHTML = "玩家1积分变化："+scores[1];		
+				cardsweget[2]=data.data.detail[2].card;
+				ids[2]=data.data.detail[2].player_id;
+				scores[2]=data.data.detail[2].score;
+				var cardstring=cardsweget[2].toString();
+				card3=cardstring.split(/[ ,]+/);
+			
+				document.getElementById('name3').innerHTML = ids[2];
+				document.getElementById('player3').innerHTML = "玩家3积分变化："+scores[2];	
+				cardsweget[3]=data.data.detail[3].card;
+				ids[3]=data.data.detail[3].player_id;
+				scores[3]=data.data.detail[3].score;
+				var cardstring=cardsweget[3].toString();
+				card3=cardstring.split(/[ ,]+/);
+			
+				document.getElementById('name4').innerHTML = ids[3];
+				document.getElementById('player4').innerHTML = "玩家4积分变化："+scores[3];	
+            },
+			error: function (res) {
+				alert("无法查看特定战局");
+                window.location.href = '登录后界面.html'
+        	}
+        });
+	
+}

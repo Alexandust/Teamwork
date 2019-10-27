@@ -1,0 +1,64 @@
+function loginnow(){
+	var logname=document.getElementById("username").value;
+	var logpass=document.getElementById("password").value;
+	if (document.getElementById("username").value == null || document.getElementById("password").value == null) 
+	{
+        alert("用户名或密码不能为空");
+        return;
+    }
+	else
+	{
+	var userinfor = '{"username":"' + logname +'","password":"' + logpass +'"}';
+	var xmlhttprequest = new XMLHttpRequest();
+	xmlhttprequest.onreadystatechange=getresult;
+	xmlhttprequest.open("post","https://api.shisanshui.rtxux.xyz/auth/login",false);
+	xmlhttprequest.setRequestHeader("Content-Type","application/json");
+	xmlhttprequest.send(userinfor);
+	}
+}
+function getresult(xmlhttprequest){
+	if(xmlhttprequest.readyState==4 && xmlhttprequest.status==200){
+	var result=xmlhttprequest.responseText;
+	console.log(result);
+	if(JSON.parse(result).status == 0)
+	{
+		console.log(JSON.parse(result).data.user_id);
+        var token = JSON.parse(result).data.token;
+        token1 = token;
+        if (JSON.parse(result).data.user_id != check(token)) 
+			{
+        		alert("登陆认证失败");
+        	} 
+		else
+			{
+				alert("登陆成功");
+				window.location.href = '登录后界面.html'
+			}
+	} 
+	else 
+	{
+		if (JSON.parse(response).status == 1005)
+		{
+			alert("用户名或密码错误，请确认后重新输入");
+		}
+	}
+}
+}
+function check(token) 
+	{
+        var xmlhttprequest = new XMLHttpRequest();
+        xmlhttprequest.onreadystatechange = function () {
+            if (xmlhttprequest.readyState == 4) 
+			{
+                var result = xmlhttprequest.response;
+                if (JSON.parse(result).data.result == null) 
+				{
+                    userid = JSON.parse(result).data.user_id;
+                }
+            }
+        }
+        xmlhttprequest.open("GET", "https://api.shisanshui.rtxux.xyz/auth/validate", false);
+        xmlhttprequest.setRequestHeader("X-Auth-Token", token);
+        xmlhttprequest.send();
+        return userid;
+    }
