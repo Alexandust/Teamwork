@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 import flask
 from flask_cors import CORS
@@ -8,10 +8,10 @@ def Tonghuashun(poker):
     ok = 1
     for i in range(1, 5):
         if poker[i] % 10 != poker[i - 1] % 10:
-        ok = 0
+            ok = 0
     for i in range(1, 5):
         if poker[i] // 10 != poker[i - 1] // 10 + 1:
-        ok = 0
+            ok = 0
     if ok == 1:
         return True
     else:
@@ -157,9 +157,6 @@ def Play(poker):
 
   save = []
   MAX = 0       #记录最优且最理想情况全赢能获得多少水
-  Mscore1 = 0   #记录目前最优底墩权值分数
-  Mscore2 = 0   #中墩
-  Mscore3 = 0   #顶墩
   SUM=0
   for TOP in combinations(newpoker, 3):
     tmp = list(newpoker[:])
@@ -283,9 +280,6 @@ def Play(poker):
         save.append(temp)
         MAX = val1 + val2 + val3
         SUM=score1+score2+score3
-        Mscore1 = score1
-        Mscore2 = score2
-        Mscore3 = score3
 
   return save
 
@@ -307,4 +301,4 @@ def getcards():
     return response
 
 
-server.run(port=8090, debug=True, host='127.0.0.1')
+server.run(port=8090, debug=False, host='127.0.0.1')
