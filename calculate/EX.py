@@ -3,26 +3,22 @@
 import flask
 from flask_cors import CORS
 from flask import jsonify
-from itertools import combinations,permutations
-def Play(poker):
-
-  def Tonghuashun(poker):
+from itertools import combinations
+def Tonghuashun(poker):
     ok = 1
     for i in range(1, 5):
-      if poker[i] % 10 != poker[i - 1] % 10:
+        if poker[i] % 10 != poker[i - 1] % 10:
         ok = 0
-        break
     for i in range(1, 5):
-      if poker[i] // 10 != poker[i - 1] // 10 + 1:
+        if poker[i] // 10 != poker[i - 1] // 10 + 1:
         ok = 0
-        break
     if ok == 1:
-      return True
+        return True
     else:
-      return False
+        return False
 
 
-  def Zhadan(poker):
+def Zhadan(poker):
     ok1 = 1
     ok2 = 1
     for i in range(1, 4):
@@ -39,7 +35,7 @@ def Play(poker):
       return False
 
 
-  def Hulu(poker):
+def Hulu(poker):
     ok1 = 0
     ok2 = 0
     if (poker[0] // 10 == poker[1] // 10) and (poker[2] // 10 == poker[3] // 10 and poker[3] // 10 == poker[4] // 10):
@@ -52,7 +48,7 @@ def Play(poker):
       return False
 
 
-  def Tonghua(poker):
+def Tonghua(poker):
     ok = 1
     for i in range(1, 5):
       if poker[i] % 10 != poker[i - 1] % 10:
@@ -64,7 +60,7 @@ def Play(poker):
       return False
 
 
-  def Shunzi(poker):
+def Shunzi(poker):
     ok = 1
     for i in range(1, 5):
       if poker[i] // 10 != poker[i - 1] // 10 + 1:
@@ -76,7 +72,7 @@ def Play(poker):
       return False
 
 
-  def Santiao(poker, n):
+def Santiao(poker, n):
     ok = 1
     if n == 3:
       for i in range(1, 3):
@@ -100,7 +96,7 @@ def Play(poker):
       return False
 
 
-  def Liandui(poker):
+def Liandui(poker):
     p1 = 0
     p2 = 0
     for i in range(1, 5):
@@ -115,7 +111,7 @@ def Play(poker):
       return False
 
 
-  def Erdui(poker):
+def Erdui(poker):
     cnt = 0
     for i in range(1, 5):
       if poker[i] // 10 == poker[i - 1] // 10:
@@ -126,7 +122,7 @@ def Play(poker):
       return False
 
 
-  def Yidui(poker, n):
+def Yidui(poker, n):
     ok = 0
     for i in range(1, n):
       if poker[i] // 10 == poker[i - 1] // 10:
@@ -136,6 +132,8 @@ def Play(poker):
     else:
       return False
 
+
+def Play(poker):
   # 个位数为1是黑桃,2是红桃,3是梅花,4是方块
   poker = poker.split(' ')
   change1 = {'$': 1, '&': 2, '*': 3, '#': 4}
@@ -183,7 +181,7 @@ def Play(poker):
         val1 = 5
       elif Zhadan(BOT):
         score1 = 256
-        val = 4
+        val1 = 4
       elif Hulu(BOT):
         score1 = 128
       elif Tonghua(BOT):
@@ -232,21 +230,13 @@ def Play(poker):
       else:
         score3 = 1
 
-      bigger = 0
-      if score1 > Mscore1:
-        bigger += 1
-      if score2 > Mscore2:
-        bigger += 1
-      if score3 > Mscore3:
-        bigger += 1
-
       if score1 >= score2 and score2 >= score3 and (val1 + val2 + val3 > MAX or (val1 + val2 + val3 == MAX and score1+score2+score3 >= SUM and score1>score2 and score2>score3) ):
         save = []
         temp = ''
         pai = ''
         for i in range(3):
           temp += change2[TOP[i] % 10]
-          pai= str(TOP[i] // 10)
+          pai = str(TOP[i] // 10)
           if(pai=='11'):
               pai='J'
           elif(pai=='12'):
@@ -262,7 +252,7 @@ def Play(poker):
         temp = ""
         for i in range(5):
           temp += change2[MID[i] % 10]
-          pai   = str(MID[i] // 10)
+          pai = str(MID[i] // 10)
           if(pai=='11'):
               pai='J'
           elif(pai=='12'):
@@ -278,7 +268,7 @@ def Play(poker):
         temp = ""
         for i in range(5):
           temp += change2[BOT[i] % 10]
-          pai   = str(BOT[i] // 10)
+          pai = str(BOT[i] // 10)
           if(pai=='11'):
               pai='J'
           elif(pai=='12'):
@@ -296,18 +286,18 @@ def Play(poker):
         Mscore1 = score1
         Mscore2 = score2
         Mscore3 = score3
+
   return save
 
 
-server = flask.Flask(__name__)
+server = flask.Flask(__name__)  # __name__代表当前的python文件。把当前的python文件当做一个服务启动
 
 CORS(server, resources=r'/*')
 
 
-@server.route('/getcards', methods=['post'])
+@server.route('/getcards', methods=['post'])  # 第一个参数就是路径,第二个参数支持的请求方式，不写的话默认是get
 def getcards():
     card = flask.request.values.get('card')
-
     res=Play(card)
     ans={'card':res}
     response = flask.make_response(jsonify(ans))
@@ -316,5 +306,5 @@ def getcards():
     response.headers['Access-Control-Allow-Headers'] = 'x-requested-with'
     return response
 
-if __name__=="__main__":
-  server.run(host='127.0.0.1',port=8090)
+
+server.run(port=8090, debug=True, host='127.0.0.1')
